@@ -18,5 +18,18 @@
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro"
     }
+  },
+  "NetworkTables": {
+    "LiveWindow": {
+      ".status": {
+        "open": true
+      },
+      "Ungrouped": {
+        "navX-Sensor[4]": {
+          "open": true
+        },
+        "open": true
+      }
+    }
   }
 }

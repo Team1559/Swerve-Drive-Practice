@@ -323,16 +323,17 @@ public class DTXboxController {
     }
 
     private double deadBand(double d) {
-        if (this.deadBand == 0D) {
-            // Not set, "fast path"
-            return d;
-        } else if (Math.abs(d) < this.deadBand) {
-            return 0D;
-        } else if (d < 0D) {
-            return (d + this.deadBand) / (1D - this.deadBand);
-        } else {
-            return (d - this.deadBand) / (1D - this.deadBand);
-        }
+        return d;
+        // if (this.deadBand == 0D) {
+        //     // Not set, "fast path"
+        //     return d;
+        // } else if (Math.abs(d) < this.deadBand) {
+        //     return 0D;
+        // } else if (d < 0D) {
+        //     return (d + this.deadBand) / (1D - this.deadBand);
+        // } else {
+        //     return (d - this.deadBand) / (1D - this.deadBand);
+        // }
     }
 
     private static double squareKeepSign(double d) {

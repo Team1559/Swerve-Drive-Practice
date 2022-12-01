@@ -8,6 +8,7 @@ import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -33,6 +34,10 @@ public class Robot extends TimedRobot {
         this.swerveDrive = new SwerveDrive(this.navX);
 
         this.controller.setDeadBand(0.02);
+        double[] offsets = this.swerveDrive.getCancoderOffsets();
+        for (int i = 0; i < offsets.length; i++) {
+            SmartDashboard.putNumber("Offset " + (i + 1), offsets[i]);
+        }
     }
 
     /**
@@ -41,7 +46,16 @@ public class Robot extends TimedRobot {
      * SmartDashboard integrated updating.
      */
     @Override
-    public void robotPeriodic() {}
+    public void robotPeriodic() {
+        double[] cancoderPos = this.swerveDrive.getCancoderPositions();
+        for (int i = 0; i < cancoderPos.length; i++) {
+            SmartDashboard.putNumber("Wheel " + (i + 1), cancoderPos[i]);
+        }
+
+        SmartDashboard.putNumber("Yaw", this.navX.getYaw());
+        SmartDashboard.putNumber("Roll", this.navX.getRoll());
+        SmartDashboard.putNumber("Pitch", this.navX.getPitch());
+    }
 
     /** This function is called once when autonomous is enabled. */
     @Override
@@ -58,16 +72,33 @@ public class Robot extends TimedRobot {
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        // this.swerveDrive.drive(this.controller.getLeftStickXSquared(),
-        //         this.controller.getLeftStickYSquared(),
-        //         this.controller.getRightStickXSquared());
-        // this.swerveDrive.drive(0, 0.1, 0);
-        this.swerveDrive.setAngles(swerveAngle);
-        if (this.controller.getYButtonPressed()) {
-            swerveAngle += this.controller.getRightBumper() ? 10 : 1;
-        } else if (this.controller.getAButtonPressed()) {
-            swerveAngle -= this.controller.getRightBumper() ? 10 : 1;
+        this.swerveDrive.drive(this.controller.getLeftStickXSquared(),
+        this.controller.getLeftStickYSquared(),
+                this.controller.getRightStickXSquared());
+
+        if (this.controller.getAButtonPressed()) {
+            this.swerveDrive.zeroGyroscope();
         }
+        // SmartDashboard.putNumber("Controller X",
+        // this.controller.getLeftStickXSquared());
+        // SmartDashboard.putNumber("Controller Y",
+        // this.controller.getLeftStickYSquared());
+        // SmartDashboard.putNumber("Controller R",
+        // this.controller.getRightStickXSquared());
+        // this.swerveDrive.drive(0, 0.3, 0);
+
+        // double amount = 1;
+        // if (this.controller.getLeftBumper()) {
+        //     amount = 0.1;
+        // } else if (this.controller.getRightBumper()) {
+        //     amount = 10;
+        // }
+        // if (this.controller.getYButtonPressed()) {
+        //     swerveAngle += amount;
+        // } else if (this.controller.getAButtonPressed()) {
+        //     swerveAngle -= amount;
+        // }
+        // this.swerveDrive.setAngles(swerveAngle);
     }
 
     /** This function is called once when the robot is disabled. */
