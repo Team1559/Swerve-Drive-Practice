@@ -15,6 +15,7 @@ import static frc.robot.Wiring.FR_MODULE_TURN_MOTOR;
 
 import java.util.Arrays;
 
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.CANCoder;
 import com.kauailabs.navx.frc.AHRS;
 import com.swervedrivespecialties.swervelib.Mk4SwerveModuleHelper;
@@ -178,9 +179,13 @@ public class SwerveDrive {
             return Rotation2d.fromDegrees(360D - navX.getYaw());
         }
     }
-
+    private static void configureMotor(int driveMotorPort){
+        TalonFX tempMotor = new TalonFX(driveMotorPort);
+        tempMotor.configOpenloopRamp(0.5);
+    }
     private static SwerveModule createModule(int driveMotorPort,
             int steerMotorPort, int canCoderPort, double steerOffsetDegrees) {
+                    configureMotor(driveMotorPort);
         return Mk4SwerveModuleHelper.createFalcon500(GEAR_RATIO, driveMotorPort,
                 steerMotorPort, canCoderPort,
                 -Math.toRadians(steerOffsetDegrees));
