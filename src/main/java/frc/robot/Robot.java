@@ -19,9 +19,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends TimedRobot {
     private DTXboxController controller;
-    private SwerveDrive      swerveDrive;
-    private AHRS             navX;
-    private double           swerveAngle = 0;
+    private SwerveDrive swerveDrive;
+    private AHRS navX;
+    private double swerveAngle = 0;
 
     /**
      * This function is run once when the robot is first started up and should
@@ -59,22 +59,32 @@ public class Robot extends TimedRobot {
 
     /** This function is called once when autonomous is enabled. */
     @Override
-    public void autonomousInit() {}
+    public void autonomousInit() {
+    }
 
     /** This function is called periodically during autonomous. */
     @Override
-    public void autonomousPeriodic() {}
+    public void autonomousPeriodic() {
+    }
 
     /** This function is called once when teleop is enabled. */
     @Override
-    public void teleopInit() {}
+    public void teleopInit() {
+    }
 
     /** This function is called periodically during operator control. */
     @Override
     public void teleopPeriodic() {
-        this.swerveDrive.drive(this.controller.getLeftStickXSquared(),
-        this.controller.getLeftStickYSquared(),
-                this.controller.getRightStickXSquared());
+        double leftJoystickScaleFactor = 1;
+        double rightJoystickScaleFactor = 1;
+        if (controller.getLeftBumper()) {
+            leftJoystickScaleFactor = 0.25;
+            rightJoystickScaleFactor = 0.25;
+        }
+        this.swerveDrive.drive(
+                this.controller.getLeftStickXSquared() * leftJoystickScaleFactor,
+                this.controller.getLeftStickYSquared() * leftJoystickScaleFactor,
+                this.controller.getRightStickXSquared() * rightJoystickScaleFactor);
 
         if (this.controller.getAButtonPressed()) {
             this.swerveDrive.zeroGyroscope();
@@ -89,31 +99,35 @@ public class Robot extends TimedRobot {
 
         // double amount = 1;
         // if (this.controller.getLeftBumper()) {
-        //     amount = 0.1;
+        // amount = 0.1;
         // } else if (this.controller.getRightBumper()) {
-        //     amount = 10;
+        // amount = 10;
         // }
         // if (this.controller.getYButtonPressed()) {
-        //     swerveAngle += amount;
+        // swerveAngle += amount;
         // } else if (this.controller.getAButtonPressed()) {
-        //     swerveAngle -= amount;
+        // swerveAngle -= amount;
         // }
         // this.swerveDrive.setAngles(swerveAngle);
     }
 
     /** This function is called once when the robot is disabled. */
     @Override
-    public void disabledInit() {}
+    public void disabledInit() {
+    }
 
     /** This function is called periodically when disabled. */
     @Override
-    public void disabledPeriodic() {}
+    public void disabledPeriodic() {
+    }
 
     /** This function is called once when test mode is enabled. */
     @Override
-    public void testInit() {}
+    public void testInit() {
+    }
 
     /** This function is called periodically during test mode. */
     @Override
-    public void testPeriodic() {}
+    public void testPeriodic() {
+    }
 }
