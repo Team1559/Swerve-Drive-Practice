@@ -4,9 +4,9 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.sensors.Pigeon2;
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -19,9 +19,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends TimedRobot {
     private DTXboxController controller;
-    private SwerveDrive swerveDrive;
-    private AHRS navX;
-    private double swerveAngle = 0;
+    private SwerveDrive      swerveDrive;
+    private AHRS             navX;
+    private Pigeon2          pigeon;
+    private double           swerveAngle = 0;
 
     /**
      * This function is run once when the robot is first started up and should
@@ -30,8 +31,10 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         this.controller = new DTXboxController(0);
-        this.navX = new AHRS(SPI.Port.kMXP);
-        this.swerveDrive = new SwerveDrive(this.navX);
+        // this.navX = new AHRS(SPI.Port.kMXP);
+        this.pigeon = new Pigeon2(Wiring.PIGEON_IMU);
+        this.swerveDrive = new SwerveDrive();
+        // this.swerveDrive = new SwerveDrive(this.navX);
 
         this.controller.setDeadBand(0.02);
         double[] offsets = this.swerveDrive.getCancoderOffsets();
@@ -52,25 +55,20 @@ public class Robot extends TimedRobot {
             SmartDashboard.putNumber("Wheel " + (i + 1), cancoderPos[i]);
         }
 
-        SmartDashboard.putNumber("Yaw", this.navX.getYaw());
-        SmartDashboard.putNumber("Roll", this.navX.getRoll());
-        SmartDashboard.putNumber("Pitch", this.navX.getPitch());
+        SmartDashboard.putNumber("Yaw", this.pigeon.getYaw());
     }
 
     /** This function is called once when autonomous is enabled. */
     @Override
-    public void autonomousInit() {
-    }
+    public void autonomousInit() {}
 
     /** This function is called periodically during autonomous. */
     @Override
-    public void autonomousPeriodic() {
-    }
+    public void autonomousPeriodic() {}
 
     /** This function is called once when teleop is enabled. */
     @Override
-    public void teleopInit() {
-    }
+    public void teleopInit() {}
 
     /** This function is called periodically during operator control. */
     @Override
@@ -82,9 +80,12 @@ public class Robot extends TimedRobot {
             rightJoystickScaleFactor = 0.25;
         }
         this.swerveDrive.drive(
-                this.controller.getLeftStickXSquared() * leftJoystickScaleFactor,
-                this.controller.getLeftStickYSquared() * leftJoystickScaleFactor,
-                this.controller.getRightStickXSquared() * rightJoystickScaleFactor);
+                this.controller.getLeftStickXSquared()
+                        * leftJoystickScaleFactor,
+                this.controller.getLeftStickYSquared()
+                        * leftJoystickScaleFactor,
+                this.controller.getRightStickXSquared()
+                        * rightJoystickScaleFactor);
 
         if (this.controller.getAButtonPressed()) {
             this.swerveDrive.zeroGyroscope();
@@ -113,21 +114,17 @@ public class Robot extends TimedRobot {
 
     /** This function is called once when the robot is disabled. */
     @Override
-    public void disabledInit() {
-    }
+    public void disabledInit() {}
 
     /** This function is called periodically when disabled. */
     @Override
-    public void disabledPeriodic() {
-    }
+    public void disabledPeriodic() {}
 
     /** This function is called once when test mode is enabled. */
     @Override
-    public void testInit() {
-    }
+    public void testInit() {}
 
     /** This function is called periodically during test mode. */
     @Override
-    public void testPeriodic() {
-    }
+    public void testPeriodic() {}
 }
