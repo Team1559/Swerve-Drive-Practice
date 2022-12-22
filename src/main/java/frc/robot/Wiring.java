@@ -19,4 +19,5 @@ public class Wiring {
     public static final int BR_MODULE_DRIVE_MOTOR = 4;
     public static final int BR_MODULE_CANCODER    = 5;
 
+    public static final int PIGEON_IMU = 99999;
 }

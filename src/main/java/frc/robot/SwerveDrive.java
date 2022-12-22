@@ -17,6 +17,7 @@ import java.util.Arrays;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.CANCoder;
+import com.ctre.phoenix.sensors.Pigeon2;
 import com.kauailabs.navx.frc.AHRS;
 import com.swervedrivespecialties.swervelib.Mk4SwerveModuleHelper;
 import com.swervedrivespecialties.swervelib.Mk4SwerveModuleHelper.GearRatio;
@@ -72,10 +73,12 @@ public class SwerveDrive {
     private final CANCoder[]            cancoders;
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry   odometry;
-    private final AHRS                  navX;
+    // private final AHRS navX;
+    private final Pigeon2 pigeon;
 
     public SwerveDrive(AHRS navx) {
-        this.navX = navx;
+        // this.navX = navx;
+        this.pigeon = new Pigeon2(Wiring.PIGEON_IMU);
         this.modules = new SwerveModule[DRIVE_MOTOR_IDS.length];
         for (int i = 0; i < this.modules.length; i++) {
             this.modules[i] = createModule(DRIVE_MOTOR_IDS[i],
@@ -96,28 +99,25 @@ public class SwerveDrive {
         double velocityY = inputY * MAX_DRIVE_VELOCITY_MPS;
         double rotation = -inputR * MAX_TURN_SPEED_RADIANS_PER_SECOND;
 
-        // ChassisSpeeds considers +x to be forwards (for some weird reason)
+        // ChassisSpeeds considers +x to be forwards
         ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(velocityY,
                 -velocityX, rotation, getCurrentRobotAngle());
-        // ChassisSpeeds speeds = new ChassisSpeeds(velocityY, -velocityX,
-        // rotation);
 
         SwerveModuleState[] newStates = this.kinematics.toSwerveModuleStates(
                 speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(newStates,
                 MAX_DRIVE_VELOCITY_MPS);
 
-        // double minCosine = 1;
-        // for (int i = 0; i < this.modules.length; i++) {
-        //     double cosine = newStates[i].angle.minus(
-        //             new Rotation2d(this.modules[i].getSteerAngle()))
-        //                                       .getCos();
-        //     if (cosine < minCosine) {
-        //         minCosine = cosine;
-        //     }
-        // }
-
-        // SmartDashboard.putNumber("Cosine", minCosine);
+        double minCosine = 1D;
+        for (int i = 0; i < this.modules.length; i++) {
+            double cosine = newStates[i].angle.minus(
+                    new Rotation2d(this.modules[i].getSteerAngle()))
+                                              .getCos();
+            SmartDashboard.putNumber("Cosine " + i, cosine);
+            if (cosine < minCosine) {
+                minCosine = cosine;
+            }
+        }
 
         for (int i = 0; i < this.modules.length; i++) {
             // newStates[i].speedMetersPerSecond *= minCosine;
@@ -127,7 +127,15 @@ public class SwerveDrive {
                     / MAX_DRIVE_VELOCITY_MPS * MAX_VOLTAGE,
                     newStates[i].angle.getRadians());
         }
-        this.odometry.update(getCurrentRobotAngle(), newStates);
+
+        SwerveModuleState[] currentStates = Arrays.stream(this.modules)
+                                                  .map(m -> new SwerveModuleState(
+                                                          m.getDriveVelocity(),
+                                                          new Rotation2d(
+                                                                  m.getSteerAngle())))
+                                                  .toArray(
+                                                          SwerveModuleState[]::new);
+        this.odometry.update(getCurrentRobotAngle(), currentStates);
 
         Pose2d estimatedPosition = this.odometry.getPoseMeters();
         SmartDashboard.putNumber("Current X position",
@@ -166,26 +174,30 @@ public class SwerveDrive {
     }
 
     public void zeroGyroscope() {
-        this.navX.zeroYaw();
+        // this.navX.zeroYaw();
+        this.pigeon.zeroGyroBiasNow();
     }
 
     private Rotation2d getCurrentRobotAngle() {
         // return Rotation2d.fromDegrees(0);
-        if (this.navX.isMagnetometerCalibrated()) {
-            return Rotation2d.fromDegrees(navX.getFusedHeading());
-        } else {
-            // We have to invert the angle of the NavX so that rotating the
-            // robot counter-clockwise makes the angle increase.
-            return Rotation2d.fromDegrees(360D - navX.getYaw());
-        }
+        // if (this.navX.isMagnetometerCalibrated()) {
+        // return Rotation2d.fromDegrees(navX.getFusedHeading());
+        // } else {
+        // // We have to invert the angle of the NavX so that rotating the
+        // // robot counter-clockwise makes the angle increase.
+        // return Rotation2d.fromDegrees(360D - navX.getYaw());
+        // }
+        return Rotation2d.fromDegrees(this.pigeon.getYaw());
     }
-    private static void configureMotor(int driveMotorPort){
+
+    private static void configureMotor(int driveMotorPort) {
         TalonFX tempMotor = new TalonFX(driveMotorPort);
         tempMotor.configOpenloopRamp(0.5);
     }
+
     private static SwerveModule createModule(int driveMotorPort,
             int steerMotorPort, int canCoderPort, double steerOffsetDegrees) {
-                    configureMotor(driveMotorPort);
+        configureMotor(driveMotorPort);
         return Mk4SwerveModuleHelper.createFalcon500(GEAR_RATIO, driveMotorPort,
                 steerMotorPort, canCoderPort,
                 -Math.toRadians(steerOffsetDegrees));
