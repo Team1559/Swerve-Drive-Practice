@@ -76,7 +76,8 @@ public class SwerveDrive {
     // private final AHRS navX;
     private final Pigeon2 pigeon;
 
-    public SwerveDrive(AHRS navx) {
+    public SwerveDrive() {
+    // public SwerveDrive(AHRS navx) {
         // this.navX = navx;
         this.pigeon = new Pigeon2(Wiring.PIGEON_IMU);
         this.modules = new SwerveModule[DRIVE_MOTOR_IDS.length];
